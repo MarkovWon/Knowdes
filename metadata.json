@@ -1,0 +1,5 @@
+{
+  "name": "Knowledge Graph Learner",
+  "description": "Visual knowledge graph based learning path generator using Gemini 2.5 Flash for grounded research and Gemini 3 Pro for visualization.",
+  "requestFramePermissions": []
+}
