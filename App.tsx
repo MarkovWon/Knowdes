@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { generateKnowledgeGraph, expandGraph, generateActionPlan, generateConceptImage, hasApiKey, selectApiKey } from './services/geminiService';
 import GraphVisualizer from './components/GraphVisualizer';
+import NotebookLMModal from './components/NotebookLMModal';
 import { KnowledgeGraphData, GraphNode, PlanResponse, GraphLink } from './types';
 
 const App: React.FC = () => {
@@ -27,6 +28,9 @@ const App: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+
+  // NotebookLM Integration
+  const [showNotebookModal, setShowNotebookModal] = useState(false);
 
   // File Import Ref
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -342,6 +346,19 @@ const App: React.FC = () => {
             <div className="h-8 w-px bg-gray-700 mx-2 hidden md:block"></div>
             
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowNotebookModal(true)}
+                disabled={!graphData}
+                className="p-2 rounded-lg bg-gray-800 border border-gray-700 text-blue-400 hover:text-white hover:bg-gray-700 hover:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Connect/Export to NotebookLM"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </button>
+              
+              <div className="h-8 w-px bg-gray-700 mx-1 hidden md:block"></div>
+
                <button
                 onClick={handleImportClick}
                 className="p-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 transition-all"
@@ -536,4 +553,51 @@ const App: React.FC = () => {
 
                          {plan.sources.length > 0 && (
                            <div className="mt-6 pt-4 border-t border-gray-800">
-                             <h4 className="text-xs font-semibold text-gray-5
+                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                               Grounded Sources
+                             </h4>
+                             <ul className="space-y-2">
+                               {plan.sources.map((source, idx) => (
+                                 <li key={idx}>
+                                   <a 
+                                     href={source.uri} 
+                                     target="_blank" 
+                                     rel="noopener noreferrer"
+                                     className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors truncate"
+                                   >
+                                     <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                     </svg>
+                                     <span className="truncate">{source.title}</span>
+                                   </a>
+                                 </li>
+                               ))}
+                             </ul>
+                           </div>
+                         )}
+                      </>
+                    ) : (
+                      <div className="text-yellow-500 text-sm">Failed to generate action plan.</div>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          </div>
+        )}
+
+        <NotebookLMModal 
+          isOpen={showNotebookModal}
+          onClose={() => setShowNotebookModal(false)}
+          topic={topic}
+          status={status}
+          graphData={graphData}
+          selectedNode={selectedNode}
+          plan={plan}
+        />
+      </main>
+    </div>
+  );
+};
+
+export default App;
